@@ -4,7 +4,7 @@ import mlflow.sklearn
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -24,7 +24,7 @@ def main():
     mlflow.set_experiment("Titanic_Classification")
 
     # Start MLflow run
-    with mlflow.start_run(run_name="Random_Forest_Baseline"):
+    with mlflow.start_run(run_name="Logistic_Regression"):
 
         # Load dataset
         df = pd.read_csv("data/Titanic-Dataset.csv")
@@ -60,18 +60,18 @@ def main():
         )
 
         # Model parameters
-        n_estimators = 100
+        max_iter = 200
         random_state = 42
 
         # Log parameters
-        mlflow.log_param("model", "Random Forest")
-        mlflow.log_param("n_estimators", n_estimators)
+        mlflow.log_param("model", "Logistic Regression")
+        mlflow.log_param("max_iter", max_iter)
         mlflow.log_param("random_state", random_state)
         mlflow.log_param("test_size", 0.2)
 
         # Train model
-        model = RandomForestClassifier(
-            n_estimators=n_estimators,
+        model = LogisticRegression(
+            max_iter=max_iter,
             random_state=random_state,
         )
 
@@ -98,26 +98,25 @@ def main():
         mlflow.log_metric("recall", recall)
         mlflow.log_metric("f1_score", f1)
 
-         
         # Confusion Matrix
         cm = confusion_matrix(y_test, predictions)
 
         fig, ax = plt.subplots()
+
         ConfusionMatrixDisplay(
             confusion_matrix=cm
         ).plot(ax=ax)
 
-        plt.title("Random Forest - Confusion Matrix")
+        plt.title("Logistic Regression - Confusion Matrix")
         plt.tight_layout()
 
-        confusion_matrix_path = "confusion_matrix.png"
+        confusion_matrix_path = "logistic_regression_confusion_matrix.png"
+
         plt.savefig(confusion_matrix_path)
         plt.close()
 
-        # Log confusion matrix
         mlflow.log_artifact(confusion_matrix_path)
 
-         
         # Classification Report
         report = classification_report(
             y_test,
@@ -127,27 +126,25 @@ def main():
         print("\nClassification Report:")
         print(report)
 
-        report_path = "classification_report.txt"
+        report_path = "logistic_regression_classification_report.txt"
 
         with open(report_path, "w") as file:
             file.write(report)
 
-        # Log classification report
         mlflow.log_artifact(report_path)
 
-         
-        # Save Model 
-        model_path = "models/titanic_model.pkl"
+        # Save model
+        model_path = "models/titanic_logistic_regression.pkl"
 
         joblib.dump(model, model_path)
 
         # Log model to MLflow
         mlflow.sklearn.log_model(
             model,
-            name="random_forest_model",
+            name="Titanic_Logistic_Regression",
         )
 
-        print("\nModel saved in models/titanic_model.pkl")
+        print("\nModel saved in models/titanic_logistic_regression.pkl")
         print("Experiment tracked in MLflow")
 
 
